@@ -26,14 +26,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-RUN pip3 --no-cache-dir install python-dotenv sigopt edlib slacker-log-handler pysam tqdm redis celery biopython
-
-
+WORKDIR /opt
 RUN git clone https://github.com/isovic/graphmap.git graphmap --recursive
 WORKDIR /opt/graphmap
 RUN make && make install
 
+RUN pip3 --no-cache-dir install python-dotenv pysam tqdm redis celery biopython
+
 RUN mkdir /code
 COPY pgraphmap /code/pgraphmap
 ENV PYTHONPATH=/code
-CMD python3 /code/cel worker -c 1
+
+RUN useradd -ms /bin/bash worker
+USER worker
+
+WORKDIR /code/pgraphmap
+CMD python3 cel.py worker -c 1
