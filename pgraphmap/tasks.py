@@ -13,19 +13,19 @@ r = redis.Redis(
     port=os.environ['REDIS_PORT'],
     password=os.environ['REDIS_PASS'])
 
-storage_dir = '/var/tmp/graphmap/'
+storage_dir = os.environ.get("PGRAPHMAP_CACHE", '/var/tmp/graphmap/')
 os.makedirs(storage_dir, exist_ok=True)
 
 
 @app.task
-def basecall(fasta, ref, circular, start, num):
+def basecall(fastx, ref, circular, start, num):
 
-    fpath = os.path.join(storage_dir, fasta + ".fa")
-    rpath = os.path.join(storage_dir, ref + ".fa")
+    fpath = os.path.join(storage_dir, fastx)
+    rpath = os.path.join(storage_dir, ref)
 
     if not os.path.exists(fpath):
         with open(fpath, 'wb') as f:
-            f.write(r.get(fasta))
+            f.write(r.get(fastx))
 
     if not os.path.exists(rpath):
         with open(rpath, 'wb') as f:
